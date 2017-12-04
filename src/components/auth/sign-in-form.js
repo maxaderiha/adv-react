@@ -4,10 +4,12 @@ import {reduxForm, Field} from 'redux-form';
 
 class SignInForm extends Component {
     render() {
+        const {handleSubmit} = this.props;//from reduxForm decorator
+
         return (
             <div>
                 <h2>Sign In</h2>
-                <form>
+                <form onSubmit={handleSubmit}>
                     <div>
                         <label>Email</label>
                         <Field name='email' component='input'/>
@@ -26,5 +28,5 @@ class SignInForm extends Component {
 }
 
 export default reduxForm({
-    form: 'auth'
+    form: 'auth',
 })(SignInForm);
