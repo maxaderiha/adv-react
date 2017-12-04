@@ -4,7 +4,7 @@ import SignUpForm from '../auth/sign-up-form';
 import {Route, NavLink} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {signUp, moduleName} from '../../ducks/auth';
-import Loader from '../laoder';
+import Loader from '../common/laoder';
 
 
 class AuthPage extends Component {
