@@ -4,16 +4,17 @@ import emailValidator from 'email-validator';
 import ErrorField from '../common/error-field';
 
 
-class SignUpForm extends Component {
+class PeopleForm extends Component {
     render() {
         const {handleSubmit} = this.props;
 
         return (
             <div>
-                <h2>Sign Up</h2>
+                <h2>PeopleForm</h2>
                 <form onSubmit={handleSubmit}>
+                    <Field name='firstName' component={ErrorField}/>
+                    <Field name='lastName' component={ErrorField}/>
                     <Field name='email' component={ErrorField}/>
-                    <Field name='password' component={ErrorField} type='password'/>
                     <div>
                         <input type="submit"/>
                     </div>
@@ -23,19 +24,22 @@ class SignUpForm extends Component {
     }
 }
 
-const validate = ({email, password}) => {
+const validate = ({firstName, lastName, email}) => {
     const errors = {};
+
+    if (!firstName) errors.firstName = 'firstName is required';
+    else if (firstName.length < 3) errors.firstName = 'short firsName';
+
+    if (!lastName) errors.lastName = 'lastName is required';
+    else if (lastName.length < 5) errors.lastName = 'short lastName';
 
     if (!email) errors.email = 'email is required';
     else if (!emailValidator.validate(email)) errors.email = 'invalid email';
-
-    if (!password) errors.password = 'password is required';
-    else if (password.length < 8) errors.password = 'short password';
 
     return errors;
 };
 
 export default reduxForm({
-    form: 'auth',
+    form: 'people',
     validate,
-})(SignUpForm);
+})(PeopleForm);
