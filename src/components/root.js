@@ -10,11 +10,15 @@ import {connect} from 'react-redux';
 
 class Root extends Component {
     render() {
-        const {signedIn, signOut} = this.props;
+        const {user, signOut} = this.props;
 
-        const btn = signedIn
-            ? <button onClick={signOut}>Sign Out</button>
+        const btn = user
+            ? <div>
+                <button onClick={signOut}>Sign Out</button>
+                <p>{user.email}</p>
+            </div>
             : <Link to='/auth/signin'>Sign In</Link>;
+
 
         return (
             <div>
@@ -28,5 +32,5 @@ class Root extends Component {
 }
 
 export default connect(state => ({
-    signedIn: !!state[moduleName].user,
+    user: state[moduleName].user,
 }), {signOut}, null, {pure: false})(Root);
