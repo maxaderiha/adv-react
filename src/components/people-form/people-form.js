@@ -3,6 +3,7 @@ import {reduxForm, Field} from 'redux-form';
 import emailValidator from 'email-validator';
 import ErrorField from '../common/error-field/error-field';
 
+export const formName = 'people';
 
 class PeopleForm extends Component {
     render() {
@@ -39,7 +40,11 @@ const validate = ({firstName, lastName, email}) => {
     return errors;
 };
 
+const onSubmitSucs = (props) => {
+    console.log(props);
+};
+
 export default reduxForm({
-    form: 'people',
+    form: formName,
     validate,
 })(PeopleForm);
