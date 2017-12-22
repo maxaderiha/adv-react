@@ -16,7 +16,7 @@ const prefix = `${appName}/${moduleName}`;
 
 export const SIGN_UP_REQUEST = `${prefix}/SIGN_UP_REQUEST`;
 export const SIGN_UP_SUCCESS = `${prefix}/SIGN_UP_SUCCESS`;
-export const SIGN_UP_ERROR = `${prefix}/SIGN_UP_FAIL`;
+export const SIGN_UP_ERROR = `${prefix}/SIGN_UP_ERROR`;
 export const SIGN_IN_REQUEST = `${prefix}/SIGN_IN_REQUEST`;
 export const SIGN_IN_SUCCESS = `${prefix}/SIGN_IN_SUCCESS`;
 export const SIGN_IN_ERROR = `${prefix}/SIGN_IN_ERROR`;
