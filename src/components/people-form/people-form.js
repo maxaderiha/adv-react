@@ -40,10 +40,6 @@ const validate = ({firstName, lastName, email}) => {
     return errors;
 };
 
-const onSubmitSucs = (props) => {
-    console.log(props);
-};
-
 export default reduxForm({
     form: formName,
     validate,

@@ -1,7 +1,7 @@
 import firebase from 'firebase';
 
 
-export const appName = 'adv-react-777';
+export const appName = 'adc-react-777';
 
 export const fireBaseConfig = {
     apiKey: 'AIzaSyDxBR2vdjH967x88B2PpXuqgMKkj5lBSNE',
