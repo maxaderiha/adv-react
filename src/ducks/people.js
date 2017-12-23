@@ -1,17 +1,18 @@
 import {appName} from '../config';
-import {Record, List} from 'immutable';
-import {put, call, takeEvery} from 'redux-saga/effects';
+import {Record, OrderedMap} from 'immutable';
+import {put, call, all, takeEvery} from 'redux-saga/effects';
 import {reset} from 'redux-form';
 import {formName} from '../components/people-form/people-form'
-import {generateId} from './utils';
+import firebase from 'firebase';
 
 
 const ReducerState = Record({
-    entities: new List([]),
+    entities: new OrderedMap([]),
+    loading: false,
 });
 
 const PersonRecord = Record({
-    id: null,
+    uid: null,
     firstName: null,
     lastName: null,
     email: null,
@@ -21,14 +22,27 @@ export const moduleName = 'people';
 const prefix = `${appName}/${moduleName}`;
 
 export const ADD_PERSON_REQUEST = `${prefix}/ADD_PERSON_REQUEST`;
-export const ADD_PERSON = `${prefix}/ADD_PERSON`;
+export const ADD_PERSON_SUCCESS = `${prefix}/ADD_PERSON_SUCCESS`;
+export const ADD_PERSON_ERROR = `${prefix}/ADD_PERSON_ERROR`;
+
+export const LOAD_ALL_REQUEST = `${prefix}/LOAD_ALL_REQUEST`;
+export const LOAD_ALL_SUCCESS = `${prefix}/LOAD_ALL_SUCCESS`;
+export const LOAD_ALL_ERROR = `${prefix}/LOAD_ALL_ERROR`;
 
 export default function reducer(state = new ReducerState(), action) {
     const {type, payload} = action;
 
     switch (type) {
-        case ADD_PERSON:
-            return state.update('entities', entities => entities.push(new PersonRecord(payload)));
+        case ADD_PERSON_REQUEST:
+            return state.set('loading', true);
+
+        case ADD_PERSON_SUCCESS:
+            return state
+                .set('loading', false)
+                .setIn(['entities', payload.uid], new PersonRecord(payload));
+
+        case ADD_PERSON_ERROR:
+            return state.set('loading', false);
 
         default:
             return state;
@@ -43,16 +57,27 @@ export function addPerson(person) {
 }
 
 export const addPersonSaga = function* (action) {
-    const id = yield call(generateId);
+    const peopleRef = firebase.database().ref('people');
 
-    yield put({
-        type: ADD_PERSON,
-        payload: {...action.payload, id},
-    });
+    try {
+        const ref = yield call([peopleRef, peopleRef.push], {...action.payload});
 
-    yield put(reset(formName));
+        yield put({
+            type: ADD_PERSON_SUCCESS,
+            payload: {...action.payload, uid: ref.key},
+        });
+
+        yield put(reset(formName));
+    } catch (error) {
+        yield put({
+            type: ADD_PERSON_ERROR,
+            payload: {error}
+        });
+    }
 };
 
 export const saga = function* () {
-    yield takeEvery(ADD_PERSON_REQUEST, addPersonSaga)
+    yield all([
+        takeEvery(ADD_PERSON_REQUEST, addPersonSaga),
+    ])
 };
