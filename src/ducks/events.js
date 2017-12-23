@@ -1,7 +1,10 @@
 import {all, take, call, put} from 'redux-saga/effects';
 import firebase from 'firebase';
-import {appName} from '../config';
+import {createSelector} from 'reselect';
 import {Record, OrderedMap} from 'immutable';
+import {fbDataToEntities} from './utils';
+import {appName} from '../config';
+
 
 export const moduleName = 'events';
 const prefix = `${appName}/${moduleName}`;
@@ -10,11 +13,23 @@ export const LOAD_ALL_REQUEST = `${prefix}/LOAD_ALL_REQUEST`;
 export const LOAD_ALL_SUCCESS = `${prefix}/LOAD_ALL_SUCCESS`;
 export const LOAD_ALL_ERROR = `${prefix}/LOAD_ALL_ERROR`;
 
-
+/**
+ * Reducer
+ **/
 export const ReducerRecord = Record({
     entities: new OrderedMap({}),
     loading: false,
     loaded: false,
+});
+
+const EventRecord = Record({
+    uid: null,
+    title: null,
+    url: null,
+    where: null,
+    when: null,
+    month: null,
+    submissionDeadLine: null,
 });
 
 export default function reducer(state = new ReducerRecord(), action) {
@@ -28,19 +43,34 @@ export default function reducer(state = new ReducerRecord(), action) {
             return state
                 .set('loading', false)
                 .set('loaded', true)
-                .set('entities', new OrderedMap(payload));
+                .set('entities', fbDataToEntities(payload, EventRecord));
 
         default:
             return state;
     }
 }
 
+/**
+ * Selectors
+ **/
+export const stateSelector = state => state[moduleName];
+export const entitiesSelector = createSelector(stateSelector, state => state.entities);
+export const eventsListSelector = createSelector(entitiesSelector, entities => (
+    entities.valueSeq().toArray()
+));
+
+/**
+ * Action Creators
+ **/
 export function loadAll() {
     return {
         type: LOAD_ALL_REQUEST,
     }
 }
 
+/**
+ * Sagas
+ **/
 export const loadAllSaga = function* () {
     while (true) {
         yield take(LOAD_ALL_REQUEST);

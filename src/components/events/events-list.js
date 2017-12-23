@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {moduleName, loadAll} from '../../ducks/events';
+import {moduleName, loadAll, eventsListSelector} from '../../ducks/events';
+import Loader from '../common/laoder/loader';
 
 class EventsList extends Component {
 
@@ -9,15 +10,38 @@ class EventsList extends Component {
     }
 
     render() {
-        console.log(this.props.events);
+        if (this.props.loading) return <Loader/>;
+
         return (
             <div>
-
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>Title</th>
+                        <th>Where</th>
+                        <th>Month</th>
+                    </tr>
+                    {this.getRows()}
+                    </tbody>
+                </table>
             </div>
         );
     }
+
+    getRows = () => (
+        this.props.events.map(this.getRow)
+    );
+
+    getRow = (event) => (
+        <tr key={event.uid}>
+            <td>{event.title}</td>
+            <td>{event.where}</td>
+            <td>{event.month}</td>
+        </tr>
+    );
 }
 
 export default connect(state => ({
-    events: state[moduleName].entities,
+    events: eventsListSelector(state),
+    loading: state[moduleName].loading,
 }), {loadAll})(EventsList);
