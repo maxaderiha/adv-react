@@ -1,7 +1,7 @@
 import {all, take, call, put} from 'redux-saga/effects';
 import firebase from 'firebase';
 import {createSelector} from 'reselect';
-import {Record, OrderedMap} from 'immutable';
+import {Record, OrderedMap, OrderedSet} from 'immutable';
 import {fbDataToEntities} from './utils';
 import {appName} from '../config';
 
@@ -13,16 +13,19 @@ export const LOAD_ALL_REQUEST = `${prefix}/LOAD_ALL_REQUEST`;
 export const LOAD_ALL_SUCCESS = `${prefix}/LOAD_ALL_SUCCESS`;
 export const LOAD_ALL_ERROR = `${prefix}/LOAD_ALL_ERROR`;
 
+export const SELECT_EVENT = `${prefix}/SELECT_EVENT`;
+
 /**
  * Reducer
  **/
 export const ReducerRecord = Record({
     entities: new OrderedMap({}),
+    selected: OrderedSet([]),
     loading: false,
     loaded: false,
 });
 
-const EventRecord = Record({
+export const EventRecord = Record({
     uid: null,
     title: null,
     url: null,
@@ -45,6 +48,14 @@ export default function reducer(state = new ReducerRecord(), action) {
                 .set('loaded', true)
                 .set('entities', fbDataToEntities(payload, EventRecord));
 
+        case SELECT_EVENT: {
+            const {uid} = payload;
+
+            return state.selected.contains(uid)
+                ? state.update('selected', selected => selected.remove(uid))
+                : state.update('selected', selected => selected.add(uid));
+        }
+
         default:
             return state;
     }
@@ -65,6 +76,13 @@ export const eventsListSelector = createSelector(entitiesSelector, entities => (
 export function loadAll() {
     return {
         type: LOAD_ALL_REQUEST,
+    }
+}
+
+export function selectEvent(uid) {
+    return {
+        type: SELECT_EVENT,
+        payload: {uid},
     }
 }
 
