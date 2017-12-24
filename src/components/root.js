@@ -7,7 +7,7 @@ import ProtectedRoute from './common/protected-route';
 import EventsPage from './routes/events-page';
 import {moduleName, signOut} from '../ducks/auth'
 import {connect} from 'react-redux';
-
+import CustomDragLayer from './custom-drag-layer';
 
 class Root extends Component {
     render() {
@@ -26,6 +26,7 @@ class Root extends Component {
                 <Route path='/auth' component={AuthPage}/>
                 <Route path='/people' component={PeopleAdditionPage}/>
                 <Route path='/events' component={EventsPage}/>
+                <CustomDragLayer/>
             </div>
         );
     }

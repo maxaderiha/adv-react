@@ -1,7 +1,12 @@
 import React, {Component} from 'react';
 import {DragSource} from 'react-dnd';
+import {getEmptyImage} from 'react-dnd-html5-backend';
 
 class PersonCard extends Component {
+
+    componentDidMount() {
+        this.props.connectPreview(getEmptyImage());
+    }
 
     render() {
         const {person, style, connectDragSource, isDragging} = this.props;
@@ -33,6 +38,7 @@ const spec = {
 const collect = (connect, monitor) => ({
     connectDragSource: connect.dragSource(),
     isDragging: monitor.isDragging(),
+    connectPreview: connect.dragPreview(),
 });
 
 export default DragSource('person', spec, collect)(PersonCard);
