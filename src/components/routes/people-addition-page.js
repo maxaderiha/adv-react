@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
-import PeopleForm from '../people-form/people-form';
+import PeopleForm from '../people/people-form/people-form';
 import {connect} from 'react-redux';
 import {addPerson} from '../../ducks/people';
+import PeopleList from '../people/people-list/people-list';
 
 
 class PeopleAdditionPage extends Component {
@@ -10,6 +11,7 @@ class PeopleAdditionPage extends Component {
             <div>
                 <h1>People addition page</h1>
                 <PeopleForm onSubmit={this.handlePeopleForm}/>
+                <PeopleList/>
             </div>
         );
     }

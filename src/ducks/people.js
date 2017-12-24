@@ -2,8 +2,10 @@ import {appName} from '../config';
 import {Record, OrderedMap} from 'immutable';
 import {put, call, all, takeEvery} from 'redux-saga/effects';
 import {reset} from 'redux-form';
-import {formName} from '../components/people-form/people-form'
+import {formName} from '../components/people/people-form/people-form'
 import firebase from 'firebase';
+import {fbDataToEntities} from "./utils";
+import {createSelector} from 'reselect';
 
 
 const ReducerState = Record({
@@ -34,12 +36,18 @@ export default function reducer(state = new ReducerState(), action) {
 
     switch (type) {
         case ADD_PERSON_REQUEST:
+        case LOAD_ALL_REQUEST:
             return state.set('loading', true);
 
         case ADD_PERSON_SUCCESS:
             return state
                 .set('loading', false)
                 .setIn(['entities', payload.uid], new PersonRecord(payload));
+
+        case LOAD_ALL_SUCCESS:
+            return state
+                .set('loading', false)
+                .set('entities', fbDataToEntities(payload, PersonRecord));
 
         case ADD_PERSON_ERROR:
             return state.set('loading', false);
@@ -49,12 +57,41 @@ export default function reducer(state = new ReducerState(), action) {
     }
 }
 
+export const stateSelector = state => state[moduleName];
+export const entitiesSelector = createSelector(stateSelector, state => state.entities);
+export const peopleListSelector = createSelector(entitiesSelector, entities => entities.valueSeq().toArray());
+
+
 export function addPerson(person) {
     return {
         type: ADD_PERSON_REQUEST,
         payload: person,
     }
 }
+
+export function loadAll() {
+    return {
+        type: LOAD_ALL_REQUEST,
+    }
+}
+
+export const loadAllSaga = function* () {
+    const peopleRef = firebase.database().ref('people').orderByKey();
+
+    try {
+        const data = yield call([peopleRef, peopleRef.once], 'value');
+
+        yield put({
+            type: LOAD_ALL_SUCCESS,
+            payload: data.val(),
+        });
+    } catch (error) {
+        yield put({
+            type: LOAD_ALL_ERROR,
+            payload: {error},
+        })
+    }
+};
 
 export const addPersonSaga = function* (action) {
     const peopleRef = firebase.database().ref('people');
@@ -79,5 +116,6 @@ export const addPersonSaga = function* (action) {
 export const saga = function* () {
     yield all([
         takeEvery(ADD_PERSON_REQUEST, addPersonSaga),
+        takeEvery(LOAD_ALL_REQUEST, loadAllSaga),
     ])
 };

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {reduxForm, Field} from 'redux-form';
 import emailValidator from 'email-validator';
-import ErrorField from '../common/error-field/error-field';
+import ErrorField from '../../common/error-field/error-field';
 
 export const formName = 'people';
 
