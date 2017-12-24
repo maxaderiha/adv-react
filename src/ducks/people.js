@@ -1,6 +1,6 @@
 import {appName} from '../config';
 import {Record, OrderedMap} from 'immutable';
-import {put, call, all, takeEvery} from 'redux-saga/effects';
+import {put, call, all, takeEvery, select} from 'redux-saga/effects';
 import {reset} from 'redux-form';
 import {formName} from '../components/people/people-form/people-form'
 import firebase from 'firebase';
@@ -18,6 +18,7 @@ const PersonRecord = Record({
     firstName: null,
     lastName: null,
     email: null,
+    events: [],
 });
 
 export const moduleName = 'people';
@@ -30,6 +31,10 @@ export const ADD_PERSON_ERROR = `${prefix}/ADD_PERSON_ERROR`;
 export const LOAD_ALL_REQUEST = `${prefix}/LOAD_ALL_REQUEST`;
 export const LOAD_ALL_SUCCESS = `${prefix}/LOAD_ALL_SUCCESS`;
 export const LOAD_ALL_ERROR = `${prefix}/LOAD_ALL_ERROR`;
+
+export const ADD_EVENT_REQUEST = `${prefix}/ADD_EVENT_REQUEST`;
+export const ADD_EVENT_SUCCESS = `${prefix}/ADD_EVENT_SUCCESS`;
+
 
 export default function reducer(state = new ReducerState(), action) {
     const {type, payload} = action;
@@ -51,6 +56,9 @@ export default function reducer(state = new ReducerState(), action) {
 
         case ADD_PERSON_ERROR:
             return state.set('loading', false);
+
+        case ADD_EVENT_SUCCESS:
+            return state.setIn(['entities', payload.personUid, 'events'], payload.events);
 
         default:
             return state;
@@ -74,6 +82,36 @@ export function loadAll() {
         type: LOAD_ALL_REQUEST,
     }
 }
+
+export function addEventToPerson(personUid, eventUid) {
+    return {
+        type: ADD_EVENT_REQUEST,
+        payload: {personUid, eventUid},
+    }
+}
+
+export const addEventToPersonSaga = function* (action) {
+    const {personUid, eventUid} = action.payload;
+    const eventsRef = firebase.database().ref(`people/${personUid}/events`);
+
+    const state = yield select(stateSelector);
+    const events = state.getIn(['entities', personUid, 'events']).concat(eventUid);
+
+    try {
+        yield call([eventsRef, eventsRef.set], events);
+
+        yield put({
+            type: ADD_EVENT_SUCCESS,
+            payload: {
+                personUid,
+                events,
+            }
+        })
+    } catch (_) {
+
+    }
+
+};
 
 export const loadAllSaga = function* () {
     const peopleRef = firebase.database().ref('people').orderByKey();
@@ -117,5 +155,6 @@ export const saga = function* () {
     yield all([
         takeEvery(ADD_PERSON_REQUEST, addPersonSaga),
         takeEvery(LOAD_ALL_REQUEST, loadAllSaga),
+        takeEvery(ADD_EVENT_REQUEST, addEventToPersonSaga),
     ])
 };
