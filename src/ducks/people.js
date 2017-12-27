@@ -1,6 +1,7 @@
 import {appName} from '../config';
 import {Record, OrderedMap} from 'immutable';
-import {put, call, all, takeEvery, select} from 'redux-saga/effects';
+import {put, call, all, takeEvery, select, fork} from 'redux-saga/effects';
+import {delay} from 'redux-saga';
 import {reset} from 'redux-form';
 import {formName} from '../components/people/people-form/people-form'
 import firebase from 'firebase';
@@ -153,10 +154,19 @@ export const addPersonSaga = function* (action) {
     }
 };
 
+export const backgroundSyncSaga = function* () {
+    while (true) {
+        yield call(loadAllSaga);
+        yield delay(5000);
+    }
+};
+
 export const saga = function* () {
+    yield fork(backgroundSyncSaga);
+
     yield all([
         takeEvery(ADD_PERSON_REQUEST, addPersonSaga),
         takeEvery(LOAD_ALL_REQUEST, loadAllSaga),
         takeEvery(ADD_EVENT_REQUEST, addEventToPersonSaga),
-    ])
+    ]);
 };

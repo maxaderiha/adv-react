@@ -1,4 +1,4 @@
-import {all, take, call, put, select} from 'redux-saga/effects';
+import {all, take, takeEvery, call, put, select} from 'redux-saga/effects';
 import firebase from 'firebase';
 import {createSelector} from 'reselect';
 import {Record, OrderedMap, OrderedSet} from 'immutable';
@@ -15,6 +15,11 @@ export const LOAD_LAZY_SUCCESS = `${prefix}/LOAD_LAZY_SUCCESS`;
 export const LOAD_LAZY_ERROR = `${prefix}/LOAD_LAZY_ERROR`;
 
 export const SELECT_EVENT = `${prefix}/SELECT_EVENT`;
+
+export const DELETE_EVENT_REQUEST = `${prefix}/DELETE_EVENT_REQUEST`;
+export const DELETE_EVENT_SUCCESS = `${prefix}/DELETE_EVENT_SUCCESS`;
+export const DELETE_EVENT_ERROR = `${prefix}/DELETE_EVENT_ERROR`;
+
 
 export const ReducerRecord = Record({
     entities: new OrderedMap({}),
@@ -57,6 +62,15 @@ export default function reducer(state = new ReducerRecord(), action) {
                 : state.update('selected', selected => selected.add(uid));
         }
 
+        case DELETE_EVENT_REQUEST:
+            return state.set('loading', true);
+
+        case DELETE_EVENT_SUCCESS:
+            return state
+                .deleteIn(['entities', payload.uid])
+                .update('selected', selected => selected.remove(payload.uid))
+                .set('loading', false);
+
         default:
             return state;
     }
@@ -92,6 +106,13 @@ export function loadLazy() {
     }
 }
 
+export function deleteEvent(uid) {
+    return {
+        type: DELETE_EVENT_REQUEST,
+        payload: {uid},
+    }
+}
+
 /**
  * Sagas
  **/
@@ -122,8 +143,28 @@ export const loadLazySaga = function* () {
     }
 };
 
+export const deleteEventSaga = function* (action) {
+    const {payload} = action;
+    const ref = firebase.database().ref(`events/${payload.uid}`);
+
+    try {
+        yield call([ref, ref.remove]);
+
+        yield put({
+            type: DELETE_EVENT_SUCCESS,
+            payload: payload,
+        });
+    } catch (error) {
+        yield put({
+            type: DELETE_EVENT_ERROR,
+            payload: {error},
+        })
+    }
+};
+
 export function* saga() {
     yield all([
         loadLazySaga(),
+        takeEvery(DELETE_EVENT_REQUEST, deleteEventSaga),
     ]);
 }

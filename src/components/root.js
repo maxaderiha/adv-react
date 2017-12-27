@@ -22,10 +22,15 @@ class Root extends Component {
         return (
             <div>
                 {btn}
+                <ul>
+                    <li><Link to='/admin'>admin</Link></li>
+                    <li><Link to='/people'>people</Link></li>
+                    <li><Link to='/events'>events</Link></li>
+                </ul>
                 <ProtectedRoute path='/admin' component={AdminPage}/>
                 <Route path='/auth' component={AuthPage}/>
-                <Route path='/people' component={PeopleAdditionPage}/>
-                <Route path='/events' component={EventsPage}/>
+                <ProtectedRoute path='/people' component={PeopleAdditionPage}/>
+                <ProtectedRoute path='/events' component={EventsPage}/>
                 <CustomDragLayer/>
             </div>
         );
